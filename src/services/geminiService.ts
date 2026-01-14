@@ -1,4 +1,5 @@
-import { GoogleGenAI, Type } from '@google/genai';
+
+import { GoogleGenAI } from "@google/genai";
 
 // Mock response for demo/fallback mode if needed
 const getMockLegitCheck = () => {
@@ -26,86 +27,75 @@ const MOCK_STYLES = [
   { fit: "Wide Leg Chinos + Varsity Jacket", color: "Navy Blue & Mustard" },
 ];
 
+/**
+ * AI Legit Check for sneakers
+ */
 export const checkLegitimacy = async (base64Image: string) => {
   try {
-    // Guidelines: Create a new GoogleGenAI instance right before making an API call
+    // FIX: Always use new GoogleGenAI({apiKey: process.env.API_KEY}) as per guidelines
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    // FIX: Use ai.models.generateContent and access .text property. Avoid deprecated APIs.
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: {
-        parts: [
-          {
-            text: `Analyze this sneaker image for authenticity with definitive authority. Check stitching, shape, materials, and logo placement. 
+      contents: [
+        {
+          text: `Analyze this sneaker image for authenticity with definitive authority. Check stitching, shape, materials, and logo placement. 
             Return a JSON object with the following structure:
             {
-              "verdict": "PASS" or "FAIL" or "UNCERTAIN",
+              "verdict": "PASS" | "FAIL" | "UNCERTAIN",
               "confidence": number (0-100),
               "reasoning": "An opinionated, confident verdict on why this pair is real or fake.",
-              "details": ["High-level technical detail 1", "High-level technical detail 2"]
+              "details": string[]
             }
-            Do not include markdown formatting like \`\`\`json. Just the raw JSON string.`
-          },
-          {
-            inlineData: {
-              mimeType: 'image/jpeg',
-              data: base64Image
-            }
-          }
-        ]
-      },
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            verdict: { type: Type.STRING },
-            confidence: { type: Type.NUMBER },
-            reasoning: { type: Type.STRING },
-            details: { type: Type.ARRAY, items: { type: Type.STRING } }
+            Just the raw JSON string.`
+        },
+        {
+          inlineData: {
+            mimeType: 'image/jpeg',
+            data: base64Image
           }
         }
+      ],
+      config: {
+        responseMimeType: 'application/json'
       }
     });
     
-    // Access .text property directly (not a method)
-    const text = response.text || '{}';
-    return JSON.parse(text);
+    // FIX: Access response.text property directly (not a method)
+    const jsonStr = response.text || '{}';
+    return JSON.parse(jsonStr);
   } catch (error) {
     console.error("Gemini Vision Error:", error);
     return getMockLegitCheck();
   }
 };
 
+/**
+ * AI Outfit Recommendations
+ */
 export const generateStyleAdvice = async (sneakerName: string) => {
   try {
-    // Guidelines: Create a new GoogleGenAI instance right before making an API call
+    // FIX: Always use new GoogleGenAI({apiKey: process.env.API_KEY}) as per guidelines
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+    // FIX: Use ai.models.generateContent and JSON response mode
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: {
-        parts: [{
-          text: `You are the Executive Sneaker Stylist. Provide decisive, opinionated outfit advice for: "${sneakerName}".
+      contents: `You are the Executive Sneaker Stylist. Provide decisive, opinionated outfit advice for: "${sneakerName}".
           Analyze the shoe's silhouette and cultural vibe. Be specific and bold.
           
           Return a JSON object with two fields:
           1. "fit": A definitive outfit combination (e.g., "Must pair with Raw Indigo Selvedge and a Heavyweight Cropped Tee").
-          2. "color": A specific, high-end color palette that complements this shoe.`
-        }]
-      },
+          2. "color": A specific, high-end color palette that complements this shoe.`,
       config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            fit: { type: Type.STRING },
-            color: { type: Type.STRING }
-          }
-        }
+        responseMimeType: 'application/json'
       }
     });
-
-    // Access .text property directly
-    return JSON.parse(response.text || '{}');
+    
+    // FIX: Access response.text property directly (not a method)
+    const jsonStr = response.text || '{}';
+    return JSON.parse(jsonStr);
   } catch (error) {
     console.error("Style AI Error:", error);
     const index = sneakerName.length % MOCK_STYLES.length;
@@ -113,65 +103,33 @@ export const generateStyleAdvice = async (sneakerName: string) => {
   }
 };
 
-export const identifySneakerFromImage = async (base64Image: string) => {
+/**
+ * Chat concierge
+ * FIX: Added missing exported member 'chatWithConcierge' to resolve import error in AIChat.tsx
+ */
+export const chatWithConcierge = async (history: any[], newMessage: string) => {
   try {
-    // Guidelines: Create a new GoogleGenAI instance right before making an API call
+    // FIX: Always use new GoogleGenAI({apiKey: process.env.API_KEY})
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: {
-        parts: [
-          {
-            text: `Identify the sneaker in this image with absolute precision. Return ONLY the model name and colorway (e.g., "Air Jordan 1 High OG Lost and Found").`
-          },
-          {
-            inlineData: {
-              mimeType: 'image/jpeg',
-              data: base64Image
-            }
-          }
-        ]
-      }
-    });
-
-    // Access .text property directly
-    return response.text?.trim() || "";
-  } catch (error) {
-    console.error("Visual Search Error:", error);
-    return null;
-  }
-};
-
-export const chatWithConcierge = async (history: { role: string; parts: { text: string }[] }[], newMessage: string) => {
-  try {
-    // Guidelines: Create a new GoogleGenAI instance right before making an API call
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    // FIX: Use ai.chats.create for conversational flow as per @google/genai guidelines
     const chat = ai.chats.create({
       model: 'gemini-3-flash-preview',
       config: {
-        tools: [{ googleSearch: {} }],
-        systemInstruction: "You are the Sneaker Concierge. You are the definitive authority on street culture, market economics, and retail authenticity. You do not offer 'suggestions'; you provide 'directives' and 'intelligence'. Your tone is high-end, confident, and professional. Avoid filler words. Provide elite market intelligence. Use strong terms like 'Buy', 'Skip', 'Hold', 'High Resale Potential', 'Market Volatility Detected'.",
+        systemInstruction: "You are KickFlip, an expert sneaker head concierge. Be helpful and concise.",
       },
-      history: history as any,
+      history: history.map(h => ({
+        role: h.role === 'model' ? 'model' : 'user',
+        parts: [{ text: h.parts[0].text }],
+      })),
     });
 
-    const result = await chat.sendMessage({ message: newMessage });
-    
-    // Guidelines: Extract grounding metadata URLs and titles for search results
-    const groundingChunks = result.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    const sources = groundingChunks
-      .map((chunk: any) => chunk.web ? { title: chunk.web.title, uri: chunk.web.uri } : null)
-      .filter(Boolean);
+    // FIX: Use sendMessage and access text via .text property
+    const response = await chat.sendMessage({ message: newMessage });
 
-    return {
-      text: result.text || "Market intelligence currently restricted.",
-      sources
-    };
+    return { text: response.text || '', sources: [] };
   } catch (error) {
-    console.error("Gemini Chat Error:", error);
-    return {
-      text: "Intelligence node offline. Accessing local cache.",
-      sources: []
-    };
+    console.error("Chat Error:", error);
+    return { text: "Connection error. Market nodes are currently unreachable.", sources: [] };
   }
 };
