@@ -1,0 +1,8 @@
+{
+  "name": "SneakPeak",
+  "description": "The premier companion for sneakerheads. Track drops, verify kicks with AI, and manage your portfolio.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

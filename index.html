@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#7c3aed" />
+    <title>SneakPeak | Hypebeast Curator</title>
+    
+    <script>
+      window.global = window;
+      window.process = {
+        env: { API_KEY: "" },
+        version: '',
+        nextTick: function(cb) { setTimeout(cb, 0); }
+      };
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+      #splash-screen {
+        position: fixed; inset: 0; background: #09090b; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s ease-out;
+      }
+      .loader-logo {
+        width: 64px; height: 64px; border-radius: 16px; background: #18181b; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 0 40px rgba(124, 58, 237, 0.2); animation: pulse 2s infinite;
+      }
+      .loader-bar { width: 120px; height: 4px; background: #27272a; border-radius: 2px; overflow: hidden; }
+      .loader-progress { width: 50%; height: 100%; background: #7c3aed; border-radius: 2px; animation: loading 1.5s infinite ease-in-out; }
+      @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+      @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+      body { background-color: #09090b; margin: 0; padding: 0; color: white; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; }
+      #root { height: 100vh; width: 100vw; }
+      
+      /* Marquee Animation */
+      @keyframes marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.12.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.90.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="splash-screen">
+      <div class="loader-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+      </div>
+      <div class="loader-bar"><div class="loader-progress"></div></div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
