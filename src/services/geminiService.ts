@@ -1,5 +1,6 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-import { GoogleGenAI } from "@google/genai";
+const getGenAI = () => new GoogleGenerativeAI(process.env.API_KEY || "");
 
 // Mock response for demo/fallback mode if needed
 const getMockLegitCheck = () => {
@@ -32,15 +33,14 @@ const MOCK_STYLES = [
  */
 export const checkLegitimacy = async (base64Image: string) => {
   try {
-    // FIX: Always use new GoogleGenAI({apiKey: process.env.API_KEY}) as per guidelines
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const genAI = getGenAI();
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+    });
     
-    // FIX: Use ai.models.generateContent and access .text property. Avoid deprecated APIs.
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: [
-        {
-          text: `Analyze this sneaker image for authenticity with definitive authority. Check stitching, shape, materials, and logo placement. 
+    const result = await model.generateContent([
+      {
+        text: `Analyze this sneaker image for authenticity with definitive authority. Check stitching, shape, materials, and logo placement. 
             Return a JSON object with the following structure:
             {
               "verdict": "PASS" | "FAIL" | "UNCERTAIN",
@@ -49,21 +49,17 @@ export const checkLegitimacy = async (base64Image: string) => {
               "details": string[]
             }
             Just the raw JSON string.`
-        },
-        {
-          inlineData: {
-            mimeType: 'image/jpeg',
-            data: base64Image
-          }
+      },
+      {
+        inlineData: {
+          mimeType: 'image/jpeg',
+          data: base64Image
         }
-      ],
-      config: {
-        responseMimeType: 'application/json'
       }
-    });
+    ]);
     
-    // FIX: Access response.text property directly (not a method)
-    const jsonStr = response.text || '{}';
+    const response = await result.response;
+    const jsonStr = response.text().replace(/```json|```/g, '').trim();
     return JSON.parse(jsonStr);
   } catch (error) {
     console.error("Gemini Vision Error:", error);
@@ -76,25 +72,20 @@ export const checkLegitimacy = async (base64Image: string) => {
  */
 export const generateStyleAdvice = async (sneakerName: string) => {
   try {
-    // FIX: Always use new GoogleGenAI({apiKey: process.env.API_KEY}) as per guidelines
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const genAI = getGenAI();
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+    });
 
-    // FIX: Use ai.models.generateContent and JSON response mode
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `You are the Executive Sneaker Stylist. Provide decisive, opinionated outfit advice for: "${sneakerName}".
+    const result = await model.generateContent(`You are the Executive Sneaker Stylist. Provide decisive, opinionated outfit advice for: "${sneakerName}".
           Analyze the shoe's silhouette and cultural vibe. Be specific and bold.
           
           Return a JSON object with two fields:
           1. "fit": A definitive outfit combination (e.g., "Must pair with Raw Indigo Selvedge and a Heavyweight Cropped Tee").
-          2. "color": A specific, high-end color palette that complements this shoe.`,
-      config: {
-        responseMimeType: 'application/json'
-      }
-    });
+          2. "color": A specific, high-end color palette that complements this shoe.`);
     
-    // FIX: Access response.text property directly (not a method)
-    const jsonStr = response.text || '{}';
+    const response = await result.response;
+    const jsonStr = response.text().replace(/```json|```/g, '').trim();
     return JSON.parse(jsonStr);
   } catch (error) {
     console.error("Style AI Error:", error);
@@ -105,29 +96,26 @@ export const generateStyleAdvice = async (sneakerName: string) => {
 
 /**
  * Chat concierge
- * FIX: Added missing exported member 'chatWithConcierge' to resolve import error in AIChat.tsx
  */
 export const chatWithConcierge = async (history: any[], newMessage: string) => {
   try {
-    // FIX: Always use new GoogleGenAI({apiKey: process.env.API_KEY})
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
-    // FIX: Use ai.chats.create for conversational flow as per @google/genai guidelines
-    const chat = ai.chats.create({
-      model: 'gemini-3-flash-preview',
-      config: {
-        systemInstruction: "You are KickFlip, an expert sneaker head concierge. Be helpful and concise.",
-      },
+    const genAI = getGenAI();
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction: "You are KickFlip, an expert sneaker head concierge. Be helpful and concise.",
+    });
+
+    const chat = model.startChat({
       history: history.map(h => ({
         role: h.role === 'model' ? 'model' : 'user',
         parts: [{ text: h.parts[0].text }],
       })),
     });
 
-    // FIX: Use sendMessage and access text via .text property
-    const response = await chat.sendMessage({ message: newMessage });
+    const result = await chat.sendMessage(newMessage);
+    const response = await result.response;
 
-    return { text: response.text || '', sources: [] };
+    return { text: response.text(), sources: [] };
   } catch (error) {
     console.error("Chat Error:", error);
     return { text: "Connection error. Market nodes are currently unreachable.", sources: [] };

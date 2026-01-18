@@ -7,7 +7,7 @@
 ## ⚡ Features
 
 *   **Terminal Interface:** Dark-mode, high-density data visualization inspired by Bloomberg Terminals.
-*   **KickFlip Vision (AI):** Upload a photo of any sneaker to instantly identify the model or check for legitimacy flaws using Google Gemini 2.5 Vision.
+*   **KickFlip Vision (AI):** Upload a photo of any sneaker to instantly identify the model or check for legitimacy flaws using Google Gemini 1.5 Vision.
 *   **KickFlip Stylist:** AI-generated outfit advice based on the specific silhouette and colorway of the sneaker.
 *   **Portfolio Tracking:** Track the real-time value of your collection with profit/loss analysis.
 *   **Versus Mode:** Compare two sneakers side-by-side to calculate ROI and Hype Score.
@@ -16,7 +16,7 @@
 
 *   **Frontend:** React 18, TypeScript, Vite
 *   **Styling:** Tailwind CSS
-*   **AI:** Google Gemini API (`@google/genai`)
+*   **AI:** Google Generative AI SDK (`@google/generative-ai`)
 *   **Icons:** Lucide React
 
 ## 🛠️ Installation & Setup
